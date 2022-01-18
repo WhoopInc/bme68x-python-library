@@ -1,21 +1,36 @@
 from setuptools import setup, Extension, find_packages
 from pathlib import Path
+import subprocess as sp
+
+import platform
+
+uname = platform.uname()
 
 BSEC = True
+bsec_lib_name = 'algobsec'
 
 if BSEC:
     ext_comp_args = ['-D BSEC']
-    libs = ['pthread', 'm', 'rt', 'algobsec']
-    lib_dirs = ['/usr/local/lib',
-                'BSEC_2.0.6.1_Generic_Release_04302021/algo/normal_version/bin/RaspberryPi/PiThree_ArmV6']
+    libs = ['pthread', 'm', 'rt', bsec_lib_name]
+    lib_dirs = ['/usr/local/lib', 'bsec']
+    if uname.machine.find('64') != -1:
+        bsec_lib_dir = 'bsec/m64'
+    else:
+        bsec_lib_dir = 'bsec/m32'
+    lib_dirs.extend([bsec_lib_dir])
 else:
     ext_comp_args = []
     libs = ['pthread', 'm', 'rt']
     lib_dirs = ['/usr/local/lib']
+    bsec_lib_dir = None
 
 LIBDIR = Path(__file__).parent
 
 README = (LIBDIR / "README.md").read_text()
+
+# Run ranlib on the libraries
+if bsec_lib_dir:
+    sp.run(["ranlib", f"{bsec_lib_dir}/lib{bsec_lib_name}.a"])
 
 bme68x = Extension('bme68x',
                    extra_compile_args=ext_comp_args,
@@ -48,9 +63,7 @@ setup(name='bme68x',
       packages=find_packages(),
       py_modules=['bme68xConstants', 'bsecConstants'],
       package_data={
-          'bme68x': [
-               'BSEC_2.0.6.1_Generic_Release_04302021/config/bsec_sel_iaq_33v_4d/2021_04_29_02_51_bsec_h2s_nonh2s_2_0_6_1 .config',
-          ]
+          'bme68x': ['bsec/2021_04_29_02_51_bsec_h2s_nonh2s_2_0_6_1 .config']
       },
       headers=['BME68x-Sensor-API/bme68x.h',
                'BME68x-Sensor-API/bme68x_defs.h', 'internal_functions.h'],
