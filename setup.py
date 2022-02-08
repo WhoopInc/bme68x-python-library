@@ -8,7 +8,7 @@ uname = platform.uname()
 
 bsec_lib_name = 'algobsec'
 
-ext_comp_args = ['-D BSEC', '-mfloat-abi=softfp']
+ext_comp_args = ['-D BSEC']
 libs = ['pthread', 'm', 'rt', bsec_lib_name]
 lib_dirs = ['bsec']
 
@@ -21,7 +21,7 @@ sp.run(["ranlib", f"bsec/lib{bsec_lib_name}.a"])
 
 bme68x = Extension('bme68x',
                    extra_compile_args=ext_comp_args,
-                   extra_link_args=['-mfloat-abi=softfp'],
+                   extra_link_args=['-static'],
                    libraries=libs,
                    library_dirs=lib_dirs,
                    depends=['BME68x-Sensor-API/bme68x.h', 'BME68x-Sensor-API/bme68x.c',
